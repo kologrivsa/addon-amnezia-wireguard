@@ -13,7 +13,9 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # Setup base
 # hadolint ignore=DL3003
 RUN \
-    apk add --no-cache --virtual .build-dependencies \
+    sed -i -E 's/^musl=[0-9.]+-r[0-9]+$/musl/' /etc/apk/world \
+    && apk add --no-cache --upgrade musl musl-dev \
+    && apk add --no-cache --virtual .build-dependencies \
         build-base \
         linux-headers \
         git \
@@ -31,7 +33,7 @@ RUN \
     && cd /tmp/wg-tools/src \
     && make \
     && make install \
-    && git clone --depth=1 --branch $AWG_GO\
+    && git clone --depth=1 --branch $AWG_GO \
         "https://github.com/amnezia-vpn/amneziawg-go.git" /tmp/wireguard \
     \
     && cd /tmp/wireguard \
@@ -42,7 +44,6 @@ RUN \
     && apk del --no-cache --purge \
         .build-dependencies \
         go
-
 # Copy root filesystem
 COPY rootfs /
 
